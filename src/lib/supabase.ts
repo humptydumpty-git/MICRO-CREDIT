@@ -1,10 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from './database.types';
 
+// Get Supabase URL and key from environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Initialize database client
-const supabaseUrl = 'https://qfxcmpdclduykznzazqn.databasepad.com';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjAwNjVlZGZkLTdmZjMtNGFhMS04ODhhLTI5OTFjMTIzYmFjMCJ9.eyJwcm9qZWN0SWQiOiJxZnhjbXBkY2xkdXlrem56YXpxbiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzY1ODQxNTI4LCJleHAiOjIwODEyMDE1MjgsImlzcyI6ImZhbW91cy5kYXRhYmFzZXBhZCIsImF1ZCI6ImZhbW91cy5jbGllbnRzIn0.zXvZXXTmbWLsShr7JowIz216La1dglNealmrVsRiq0s';
-const supabase = createClient(supabaseUrl, supabaseKey);
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables. Please check your .env file.');
+}
 
+// Initialize Supabase client with TypeScript types
+const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+});
 
 export { supabase };

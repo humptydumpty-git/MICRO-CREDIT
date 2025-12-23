@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { authApi } from '@/services/api';
+import type { User as AuthUserType } from '@/types';
 
 export type UserRole = 'super_admin' | 'admin' | 'manager' | 'staff' | 'agent';
 
@@ -16,6 +18,20 @@ export interface AuthUser {
   last_login?: string;
 }
 
+// Map database User to AuthUser
+const mapUserToAuthUser = (user: AuthUserType): AuthUser => ({
+  id: user.id,
+  tenant_id: user.tenant_id,
+  email: user.email,
+  first_name: user.first_name,
+  last_name: user.last_name,
+  role: user.role,
+  avatar_url: user.avatar_url,
+  phone: user.phone,
+  is_active: user.is_active,
+  last_login: user.last_login || undefined,
+});
+
 export interface AuthState {
   user: AuthUser | null;
   token: string | null;
@@ -27,7 +43,7 @@ export interface AuthState {
   // Auth actions
   login: (email: string, password: string) => Promise<boolean>;
   signup: (data: SignupData) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshSession: () => Promise<boolean>;
   resetPassword: (email: string) => Promise<boolean>;
   updatePassword: (token: string, newPassword: string) => Promise<boolean>;
@@ -110,84 +126,6 @@ const rolePermissions: Record<UserRole, string[]> = {
   ],
 };
 
-// Mock users for demo (in production, this would come from the database)
-const mockUsers: Record<string, { user: AuthUser; password: string }> = {
-  'admin@microfinance.com': {
-    password: 'admin123',
-    user: {
-      id: 'usr-001',
-      tenant_id: 'tenant-001',
-      email: 'admin@microfinance.com',
-      first_name: 'Sarah',
-      last_name: 'Johnson',
-      role: 'admin',
-      avatar_url: 'https://d64gsuwffb70l.cloudfront.net/69409a65531b674cdffc8cad_1765841662700_8f571b2d.jpg',
-      phone: '+234 801 234 5678',
-      is_active: true,
-    },
-  },
-  'manager@microfinance.com': {
-    password: 'manager123',
-    user: {
-      id: 'usr-002',
-      tenant_id: 'tenant-001',
-      email: 'manager@microfinance.com',
-      first_name: 'John',
-      last_name: 'Doe',
-      role: 'manager',
-      avatar_url: 'https://d64gsuwffb70l.cloudfront.net/69409a65531b674cdffc8cad_1765841751587_834a194d.jpg',
-      phone: '+234 802 345 6789',
-      is_active: true,
-    },
-  },
-  'staff@microfinance.com': {
-    password: 'staff123',
-    user: {
-      id: 'usr-003',
-      tenant_id: 'tenant-001',
-      email: 'staff@microfinance.com',
-      first_name: 'Jane',
-      last_name: 'Smith',
-      role: 'staff',
-      avatar_url: 'https://d64gsuwffb70l.cloudfront.net/69409a65531b674cdffc8cad_1765841669991_c1b0a5f7.png',
-      phone: '+234 803 456 7890',
-      is_active: true,
-    },
-  },
-  'agent@microfinance.com': {
-    password: 'agent123',
-    user: {
-      id: 'usr-004',
-      tenant_id: 'tenant-001',
-      email: 'agent@microfinance.com',
-      first_name: 'Michael',
-      last_name: 'Brown',
-      role: 'agent',
-      avatar_url: 'https://d64gsuwffb70l.cloudfront.net/69409a65531b674cdffc8cad_1765841752935_6ab6cf78.jpg',
-      phone: '+234 804 567 8901',
-      is_active: true,
-    },
-  },
-};
-
-// Generate a simple JWT-like token (in production, use proper JWT)
-const generateToken = (userId: string): string => {
-  const payload = {
-    sub: userId,
-    iat: Date.now(),
-    exp: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-  };
-  return btoa(JSON.stringify(payload));
-};
-
-const generateRefreshToken = (userId: string): string => {
-  const payload = {
-    sub: userId,
-    iat: Date.now(),
-    exp: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
-  };
-  return btoa(JSON.stringify(payload));
-};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -196,43 +134,40 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       refreshToken: null,
       isAuthenticated: false,
-      isLoading: false,
+      isLoading: true, // Start as loading to check session
       error: null,
 
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         
         try {
-          // Simulate API call delay
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          const result = await authApi.signIn(email, password);
           
-          const mockUser = mockUsers[email.toLowerCase()];
-          
-          if (!mockUser || mockUser.password !== password) {
-            set({ isLoading: false, error: 'Invalid email or password' });
+          if (!result.profile) {
+            set({ isLoading: false, error: 'User profile not found' });
             return false;
           }
           
-          if (!mockUser.user.is_active) {
+          if (!result.profile.is_active) {
             set({ isLoading: false, error: 'Account is deactivated. Please contact support.' });
             return false;
           }
           
-          const token = generateToken(mockUser.user.id);
-          const refreshToken = generateRefreshToken(mockUser.user.id);
+          const authUser = mapUserToAuthUser(result.profile);
           
           set({
-            user: { ...mockUser.user, last_login: new Date().toISOString() },
-            token,
-            refreshToken,
+            user: authUser,
+            token: result.session?.access_token || null,
+            refreshToken: result.session?.refresh_token || null,
             isAuthenticated: true,
             isLoading: false,
             error: null,
           });
           
           return true;
-        } catch (error) {
-          set({ isLoading: false, error: 'An error occurred during login' });
+        } catch (error: any) {
+          const errorMessage = error?.message || 'An error occurred during login';
+          set({ isLoading: false, error: errorMessage });
           return false;
         }
       },
@@ -241,84 +176,68 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         
         try {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          const result = await authApi.signUp(data.email, data.password, {
+            first_name: data.first_name,
+            last_name: data.last_name,
+            phone: data.phone,
+            tenant_id: data.tenant_id,
+          });
           
-          // Check if email already exists
-          if (mockUsers[data.email.toLowerCase()]) {
-            set({ isLoading: false, error: 'Email already registered' });
+          if (!result.profile) {
+            set({ isLoading: false, error: 'Failed to create user profile' });
             return false;
           }
           
-          // Create new user (in production, this would be an API call)
-          const newUser: AuthUser = {
-            id: `usr-${Date.now()}`,
-            tenant_id: data.tenant_id || 'tenant-001',
-            email: data.email,
-            first_name: data.first_name,
-            last_name: data.last_name,
-            role: 'staff', // Default role for new signups
-            phone: data.phone,
-            is_active: true,
-          };
+          const authUser = mapUserToAuthUser(result.profile);
           
-          // Add to mock users
-          mockUsers[data.email.toLowerCase()] = {
-            password: data.password,
-            user: newUser,
-          };
-          
-          const token = generateToken(newUser.id);
-          const refreshToken = generateRefreshToken(newUser.id);
-          
+          // Note: User may need to verify email before being fully authenticated
+          // For now, we'll set them as authenticated
           set({
-            user: newUser,
-            token,
-            refreshToken,
-            isAuthenticated: true,
+            user: authUser,
+            token: null, // Will be set after email verification
+            refreshToken: null,
+            isAuthenticated: false, // Require email verification
             isLoading: false,
             error: null,
           });
           
           return true;
-        } catch (error) {
-          set({ isLoading: false, error: 'An error occurred during signup' });
+        } catch (error: any) {
+          const errorMessage = error?.message || 'An error occurred during signup';
+          set({ isLoading: false, error: errorMessage });
           return false;
         }
       },
 
-      logout: () => {
-        set({
-          user: null,
-          token: null,
-          refreshToken: null,
-          isAuthenticated: false,
-          error: null,
-        });
+      logout: async () => {
+        try {
+          await authApi.signOut();
+        } catch (error) {
+          console.error('Error during logout:', error);
+        } finally {
+          set({
+            user: null,
+            token: null,
+            refreshToken: null,
+            isAuthenticated: false,
+            error: null,
+          });
+        }
       },
 
       refreshSession: async () => {
-        const { refreshToken, user } = get();
-        
-        if (!refreshToken || !user) {
-          return false;
-        }
-        
         try {
-          // Validate refresh token
-          const payload = JSON.parse(atob(refreshToken));
-          if (payload.exp < Date.now()) {
+          // Supabase handles token refresh automatically
+          // We just need to check if user is still authenticated
+          const currentUser = await authApi.getCurrentUser();
+          
+          if (!currentUser) {
             get().logout();
             return false;
           }
           
-          // Generate new tokens
-          const newToken = generateToken(user.id);
-          const newRefreshToken = generateRefreshToken(user.id);
-          
-          set({
-            token: newToken,
-            refreshToken: newRefreshToken,
-          });
+          const authUser = mapUserToAuthUser(currentUser);
+          set({ user: authUser, isAuthenticated: true });
           
           return true;
         } catch (error) {
@@ -331,23 +250,12 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         
         try {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          
-          // In production, this would send an email with reset link
-          const mockUser = mockUsers[email.toLowerCase()];
-          if (!mockUser) {
-            // Don't reveal if email exists for security
-            set({ isLoading: false });
-            return true;
-          }
-          
-          // Simulate sending email
-          console.log(`Password reset email sent to ${email}`);
-          
+          await authApi.resetPassword(email);
           set({ isLoading: false });
           return true;
-        } catch (error) {
-          set({ isLoading: false, error: 'Failed to send reset email' });
+        } catch (error: any) {
+          const errorMessage = error?.message || 'Failed to send reset email';
+          set({ isLoading: false, error: errorMessage });
           return false;
         }
       },
@@ -356,15 +264,14 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         
         try {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          
-          // In production, validate token and update password in database
-          // For demo, we'll just return success
-          
+          // Note: Supabase handles password reset via email link
+          // This method is for updating password when already authenticated
+          await authApi.updatePassword(newPassword);
           set({ isLoading: false });
           return true;
-        } catch (error) {
-          set({ isLoading: false, error: 'Failed to update password' });
+        } catch (error: any) {
+          const errorMessage = error?.message || 'Failed to update password';
+          set({ isLoading: false, error: errorMessage });
           return false;
         }
       },
@@ -393,8 +300,7 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
-        refreshToken: state.refreshToken,
+        // Don't persist tokens - Supabase handles session persistence
         isAuthenticated: state.isAuthenticated,
       }),
     }

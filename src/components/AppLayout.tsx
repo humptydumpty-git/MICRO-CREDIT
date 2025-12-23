@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import { useAuthStore } from '../store/authStore';
-import {
-  mockCustomers,
-  mockAccounts,
-  loansWithCustomers,
-  mockTransactions,
-  mockLoanProducts,
-  mockNotifications,
-  mockDashboardStats,
-} from '../data/mockData';
+import { 
+  customersApi, 
+  accountsApi, 
+  loansApi, 
+  transactionsApi, 
+  loanProductsApi, 
+  notificationsApi,
+  dashboardApi 
+} from '@/services/api';
+import { toast } from '@/components/ui/use-toast';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import Dashboard from './Dashboard';
@@ -171,17 +172,76 @@ const AppLayout: React.FC = () => {
   } = useAppStore();
 
   const { isAuthenticated, user } = useAuthStore();
+  const { setIsLoading } = useAppStore();
 
-  // Initialize data on mount
+  // Initialize data on mount and when user is authenticated
   useEffect(() => {
-    setCustomers(mockCustomers);
-    setAccounts(mockAccounts);
-    setLoans(loansWithCustomers);
-    setTransactions(mockTransactions);
-    setLoanProducts(mockLoanProducts);
-    setNotifications(mockNotifications);
-    setDashboardStats(mockDashboardStats);
-  }, []);
+    if (!isAuthenticated || !user) {
+      // Clear data when user is not authenticated
+      setCustomers([]);
+      setAccounts([]);
+      setLoans([]);
+      setTransactions([]);
+      setLoanProducts([]);
+      setNotifications([]);
+      setDashboardStats({
+        totalCustomers: 0,
+        activeLoans: 0,
+        totalDisbursed: 0,
+        totalCollected: 0,
+        pendingApplications: 0,
+        overdueLoans: 0,
+        savingsBalance: 0,
+        monthlyGrowth: 0,
+      });
+      return;
+    }
+
+    // Load data from API
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        // Load all data in parallel
+        const [customers, accounts, loans, transactions, loanProducts, notifications, stats] = await Promise.all([
+          customersApi.getAll().catch(() => []),
+          accountsApi.getAll().catch(() => []),
+          loansApi.getAll().catch(() => []),
+          transactionsApi.getAll().catch(() => []),
+          loanProductsApi.getAll().catch(() => []),
+          notificationsApi.getAll(user.id).catch(() => []),
+          dashboardApi.getStats(user.tenant_id).catch(() => ({
+            totalCustomers: 0,
+            activeLoans: 0,
+            totalDisbursed: 0,
+            totalCollected: 0,
+            pendingApplications: 0,
+            overdueLoans: 0,
+            savingsBalance: 0,
+            monthlyGrowth: 0,
+          })),
+        ]);
+
+        setCustomers(customers);
+        setAccounts(accounts);
+        setLoans(loans);
+        setTransactions(transactions);
+        setLoanProducts(loanProducts);
+        setNotifications(notifications);
+        setDashboardStats(stats);
+      } catch (error: any) {
+        console.error('Error loading data:', error);
+        toast({
+          title: 'Error loading data',
+          description: error?.message || 'Failed to load data from server',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [isAuthenticated, user?.id, user?.tenant_id]);
 
   const renderContent = () => {
     // Dashboard is accessible to everyone (but shows login prompt if not authenticated)
