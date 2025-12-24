@@ -193,6 +193,12 @@ export const NewCustomerModal: React.FC = () => {
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {Object.keys(errors).length > 0 && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">Please fix the errors below</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
@@ -200,9 +206,17 @@ export const NewCustomerModal: React.FC = () => {
               type="text"
               required
               value={formData.first_name}
-              onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              onChange={(e) => {
+                setFormData({ ...formData, first_name: e.target.value });
+                if (errors.first_name) setErrors({ ...errors, first_name: '' });
+              }}
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 ${
+                errors.first_name
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-200 focus:ring-emerald-500'
+              }`}
             />
+            {errors.first_name && <p className="text-xs text-red-600 mt-1">{errors.first_name}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
@@ -210,9 +224,17 @@ export const NewCustomerModal: React.FC = () => {
               type="text"
               required
               value={formData.last_name}
-              onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              onChange={(e) => {
+                setFormData({ ...formData, last_name: e.target.value });
+                if (errors.last_name) setErrors({ ...errors, last_name: '' });
+              }}
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 ${
+                errors.last_name
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-200 focus:ring-emerald-500'
+              }`}
             />
+            {errors.last_name && <p className="text-xs text-red-600 mt-1">{errors.last_name}</p>}
           </div>
         </div>
 
@@ -222,9 +244,17 @@ export const NewCustomerModal: React.FC = () => {
             <input
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              onChange={(e) => {
+                setFormData({ ...formData, email: e.target.value });
+                if (errors.email) setErrors({ ...errors, email: '' });
+              }}
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 ${
+                errors.email
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-200 focus:ring-emerald-500'
+              }`}
             />
+            {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
@@ -232,9 +262,17 @@ export const NewCustomerModal: React.FC = () => {
               type="tel"
               required
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              onChange={(e) => {
+                setFormData({ ...formData, phone: e.target.value });
+                if (errors.phone) setErrors({ ...errors, phone: '' });
+              }}
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 ${
+                errors.phone
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-200 focus:ring-emerald-500'
+              }`}
             />
+            {errors.phone && <p className="text-xs text-red-600 mt-1">{errors.phone}</p>}
           </div>
         </div>
 
@@ -317,10 +355,20 @@ export const NewCustomerModal: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Income</label>
             <input
               type="number"
+              min="0"
+              step="0.01"
               value={formData.monthly_income}
-              onChange={(e) => setFormData({ ...formData, monthly_income: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              onChange={(e) => {
+                setFormData({ ...formData, monthly_income: e.target.value });
+                if (errors.monthly_income) setErrors({ ...errors, monthly_income: '' });
+              }}
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 ${
+                errors.monthly_income
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-200 focus:ring-emerald-500'
+              }`}
             />
+            {errors.monthly_income && <p className="text-xs text-red-600 mt-1">{errors.monthly_income}</p>}
           </div>
         </div>
 
@@ -347,7 +395,8 @@ export const NewCustomerModal: React.FC = () => {
 
 // New Loan Modal
 export const NewLoanModal: React.FC = () => {
-  const { modals, closeModal, customers, loanProducts, addLoan } = useAppStore();
+  const { modals, closeModal, customers, loanProducts, addLoan, setLoans, loans } = useAppStore();
+  const { user } = useAuthStore();
   const [formData, setFormData] = useState({
     customer_id: '',
     loan_product_id: '',
@@ -356,8 +405,23 @@ export const NewLoanModal: React.FC = () => {
     purpose: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const selectedProduct = loanProducts.find((p) => p.id === formData.loan_product_id);
+  const selectedCustomer = customers.find((c) => c.id === formData.customer_id);
+
+  // Calculate EMI using the utility function
+  const calculateEMI = (principal: number, rate: number, tenure: number): number => {
+    if (principal <= 0 || tenure <= 0) return 0;
+    const monthlyRate = rate / 100 / 12;
+    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, tenure)) / (Math.pow(1 + monthlyRate, tenure) - 1);
+    return isNaN(emi) ? 0 : emi;
+  };
+
+  const calculateTotalInterest = (principal: number, emi: number, tenure: number): number => {
+    return Math.max(0, emi * tenure - principal);
+  };
+
   const emi = selectedProduct
     ? calculateEMI(
         parseFloat(formData.principal_amount) || 0,
@@ -366,46 +430,115 @@ export const NewLoanModal: React.FC = () => {
       )
     : 0;
 
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.customer_id) {
+      newErrors.customer_id = 'Please select a customer';
+    }
+    if (!formData.loan_product_id) {
+      newErrors.loan_product_id = 'Please select a loan product';
+    }
+    if (!formData.principal_amount || parseFloat(formData.principal_amount) <= 0) {
+      newErrors.principal_amount = 'Please enter a valid loan amount';
+    } else if (selectedProduct) {
+      const amount = parseFloat(formData.principal_amount);
+      if (amount < selectedProduct.min_amount) {
+        newErrors.principal_amount = `Minimum amount is ${formatCurrency(selectedProduct.min_amount)}`;
+      } else if (amount > selectedProduct.max_amount) {
+        newErrors.principal_amount = `Maximum amount is ${formatCurrency(selectedProduct.max_amount)}`;
+      }
+    }
+    if (!formData.tenure_months || parseInt(formData.tenure_months) <= 0) {
+      newErrors.tenure_months = 'Please enter a valid tenure';
+    } else if (selectedProduct) {
+      const tenure = parseInt(formData.tenure_months);
+      if (tenure < selectedProduct.min_tenure_months) {
+        newErrors.tenure_months = `Minimum tenure is ${selectedProduct.min_tenure_months} months`;
+      } else if (tenure > selectedProduct.max_tenure_months) {
+        newErrors.tenure_months = `Maximum tenure is ${selectedProduct.max_tenure_months} months`;
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedProduct) return;
+    
+    if (!validateForm() || !selectedProduct) {
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to create a loan',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setIsSubmitting(true);
+    setErrors({});
 
-    const principal = parseFloat(formData.principal_amount);
-    const tenure = parseInt(formData.tenure_months);
-    const calculatedEMI = calculateEMI(principal, selectedProduct.interest_rate, tenure);
-    const totalInterest = calculateTotalInterest(principal, calculatedEMI, tenure);
+    try {
+      const principal = parseFloat(formData.principal_amount);
+      const tenure = parseInt(formData.tenure_months);
+      const calculatedEMI = calculateEMI(principal, selectedProduct.interest_rate, tenure);
+      const totalInterest = calculateTotalInterest(principal, calculatedEMI, tenure);
 
-    const newLoan: Loan = {
-      id: `loan-${Date.now()}`,
-      tenant_id: 'tenant-001',
-      customer_id: formData.customer_id,
-      loan_product_id: formData.loan_product_id,
-      loan_number: generateLoanNumber(),
-      principal_amount: principal,
-      interest_rate: selectedProduct.interest_rate,
-      tenure_months: tenure,
-      emi_amount: calculatedEMI,
-      outstanding_balance: principal,
-      total_interest: totalInterest,
-      total_paid: 0,
-      status: 'applied',
-      purpose: formData.purpose,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+      // Get customer's account for the loan
+      const customerAccounts = await accountsApi.getByCustomerId(formData.customer_id);
+      const accountId = customerAccounts.length > 0 ? customerAccounts[0].id : undefined;
 
-    addLoan(newLoan);
-    setIsSubmitting(false);
-    closeModal('newLoan');
-    setFormData({
-      customer_id: '',
-      loan_product_id: '',
-      principal_amount: '',
-      tenure_months: '',
-      purpose: '',
-    });
+      const loanData: Partial<Loan> = {
+        tenant_id: user.tenant_id,
+        customer_id: formData.customer_id,
+        account_id: accountId,
+        loan_product_id: formData.loan_product_id,
+        principal_amount: principal,
+        interest_rate: selectedProduct.interest_rate,
+        tenure_months: tenure,
+        emi_amount: calculatedEMI,
+        outstanding_balance: principal,
+        total_interest: totalInterest,
+        total_paid: 0,
+        status: 'applied',
+        purpose: formData.purpose.trim() || undefined,
+      };
+
+      const createdLoan = await loansApi.create(loanData);
+      
+      // Update store with new loan
+      addLoan(createdLoan);
+      setLoans([createdLoan, ...loans]);
+
+      toast({
+        title: 'Success',
+        description: 'Loan application submitted successfully',
+      });
+
+      // Reset form and close modal
+      setFormData({
+        customer_id: '',
+        loan_product_id: '',
+        principal_amount: '',
+        tenure_months: '',
+        purpose: '',
+      });
+      closeModal('newLoan');
+    } catch (error: any) {
+      console.error('Error creating loan:', error);
+      toast({
+        title: 'Error',
+        description: error?.message || 'Failed to create loan application. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -416,13 +549,26 @@ export const NewLoanModal: React.FC = () => {
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {Object.keys(errors).length > 0 && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">Please fix the errors below</p>
+          </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
           <select
             required
             value={formData.customer_id}
-            onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            onChange={(e) => {
+              setFormData({ ...formData, customer_id: e.target.value });
+              if (errors.customer_id) setErrors({ ...errors, customer_id: '' });
+            }}
+            className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 ${
+              errors.customer_id
+                ? 'border-red-300 focus:ring-red-500'
+                : 'border-gray-200 focus:ring-emerald-500'
+            }`}
           >
             <option value="">Select Customer</option>
             {customers
@@ -433,6 +579,7 @@ export const NewLoanModal: React.FC = () => {
                 </option>
               ))}
           </select>
+          {errors.customer_id && <p className="text-xs text-red-600 mt-1">{errors.customer_id}</p>}
         </div>
 
         <div>
@@ -440,8 +587,15 @@ export const NewLoanModal: React.FC = () => {
           <select
             required
             value={formData.loan_product_id}
-            onChange={(e) => setFormData({ ...formData, loan_product_id: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            onChange={(e) => {
+              setFormData({ ...formData, loan_product_id: e.target.value });
+              if (errors.loan_product_id) setErrors({ ...errors, loan_product_id: '' });
+            }}
+            className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 ${
+              errors.loan_product_id
+                ? 'border-red-300 focus:ring-red-500'
+                : 'border-gray-200 focus:ring-emerald-500'
+            }`}
           >
             <option value="">Select Product</option>
             {loanProducts
@@ -452,6 +606,7 @@ export const NewLoanModal: React.FC = () => {
                 </option>
               ))}
           </select>
+          {errors.loan_product_id && <p className="text-xs text-red-600 mt-1">{errors.loan_product_id}</p>}
         </div>
 
         {selectedProduct && (
@@ -474,10 +629,19 @@ export const NewLoanModal: React.FC = () => {
               required
               min={selectedProduct?.min_amount || 0}
               max={selectedProduct?.max_amount || 10000000}
+              step="0.01"
               value={formData.principal_amount}
-              onChange={(e) => setFormData({ ...formData, principal_amount: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              onChange={(e) => {
+                setFormData({ ...formData, principal_amount: e.target.value });
+                if (errors.principal_amount) setErrors({ ...errors, principal_amount: '' });
+              }}
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 ${
+                errors.principal_amount
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-200 focus:ring-emerald-500'
+              }`}
             />
+            {errors.principal_amount && <p className="text-xs text-red-600 mt-1">{errors.principal_amount}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tenure (Months) *</label>
@@ -487,9 +651,17 @@ export const NewLoanModal: React.FC = () => {
               min={selectedProduct?.min_tenure_months || 1}
               max={selectedProduct?.max_tenure_months || 60}
               value={formData.tenure_months}
-              onChange={(e) => setFormData({ ...formData, tenure_months: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              onChange={(e) => {
+                setFormData({ ...formData, tenure_months: e.target.value });
+                if (errors.tenure_months) setErrors({ ...errors, tenure_months: '' });
+              }}
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 ${
+                errors.tenure_months
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-200 focus:ring-emerald-500'
+              }`}
             />
+            {errors.tenure_months && <p className="text-xs text-red-600 mt-1">{errors.tenure_months}</p>}
           </div>
         </div>
 
@@ -503,10 +675,13 @@ export const NewLoanModal: React.FC = () => {
           />
         </div>
 
-        {emi > 0 && (
+        {emi > 0 && selectedProduct && (
           <div className="p-4 bg-emerald-50 rounded-lg">
             <p className="text-sm text-emerald-800">
               Estimated Monthly EMI: <span className="font-bold text-lg">{formatCurrency(emi)}</span>
+            </p>
+            <p className="text-xs text-emerald-700 mt-1">
+              Total Interest: {formatCurrency(calculateTotalInterest(parseFloat(formData.principal_amount) || 0, emi, parseInt(formData.tenure_months) || 1))}
             </p>
           </div>
         )}
@@ -654,25 +829,88 @@ export const LoanDetailsModal: React.FC = () => {
   const customer = customers.find((c) => c.id === selectedLoan.customer_id);
   const product = loanProducts.find((p) => p.id === selectedLoan.loan_product_id);
 
-  const handleApprove = () => {
-    updateLoan(selectedLoan.id, {
-      status: 'approved',
-      approved_at: new Date().toISOString(),
-    });
+  const handleApprove = async () => {
+    if (!user) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to approve loans',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const updatedLoan = await loansApi.approve(selectedLoan.id, user.id);
+      updateLoan(selectedLoan.id, updatedLoan);
+      toast({
+        title: 'Success',
+        description: 'Loan approved successfully',
+      });
+    } catch (error: any) {
+      console.error('Error approving loan:', error);
+      toast({
+        title: 'Error',
+        description: error?.message || 'Failed to approve loan',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleDisburse = () => {
-    const processingFee = product ? (selectedLoan.principal_amount * product.processing_fee) / 100 : 0;
-    const disbursedAmount = selectedLoan.principal_amount - processingFee;
-    const maturityDate = new Date();
-    maturityDate.setMonth(maturityDate.getMonth() + selectedLoan.tenure_months);
+  const handleDisburse = async () => {
+    if (!user) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to disburse loans',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    updateLoan(selectedLoan.id, {
-      status: 'disbursed',
-      disbursed_amount: disbursedAmount,
-      disbursement_date: new Date().toISOString().split('T')[0],
-      maturity_date: maturityDate.toISOString().split('T')[0],
-    });
+    try {
+      const disbursementDate = new Date().toISOString().split('T')[0];
+      const updatedLoan = await loansApi.disburse(selectedLoan.id, disbursementDate);
+      updateLoan(selectedLoan.id, updatedLoan);
+      toast({
+        title: 'Success',
+        description: 'Loan disbursed successfully',
+      });
+    } catch (error: any) {
+      console.error('Error disbursing loan:', error);
+      toast({
+        title: 'Error',
+        description: error?.message || 'Failed to disburse loan',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleReject = async () => {
+    if (!user) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to reject loans',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const updatedLoan = await loansApi.update(selectedLoan.id, {
+        status: 'rejected',
+      });
+      updateLoan(selectedLoan.id, updatedLoan);
+      toast({
+        title: 'Success',
+        description: 'Loan rejected',
+      });
+    } catch (error: any) {
+      console.error('Error rejecting loan:', error);
+      toast({
+        title: 'Error',
+        description: error?.message || 'Failed to reject loan',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
