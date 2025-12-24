@@ -5,11 +5,19 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { useAuthInit } from "@/hooks/useAuthInit";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const AppContent = () => {
   // Initialize auth state from Supabase session
@@ -26,15 +34,25 @@ const AppContent = () => {
 };
 
 const App = () => (
-  <ThemeProvider defaultTheme="light">
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <AppContent />
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ThemeProvider>
+  <ErrorBoundary
+    onError={(error, errorInfo) => {
+      // Log to error tracking service in production
+      if (import.meta.env.PROD) {
+        // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });
+        console.error('Production error:', error, errorInfo);
+      }
+    }}
+  >
+    <ThemeProvider defaultTheme="light">
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AppContent />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
+  </ErrorBoundary>
 );
 
 export default App;
