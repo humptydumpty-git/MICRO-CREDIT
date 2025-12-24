@@ -37,7 +37,7 @@ const App = () => (
   <ErrorBoundary
     onError={(error, errorInfo) => {
       // Log to error tracking service in production
-      if (import.meta.env.PROD) {
+      if ((import.meta as any).env?.PROD) {
         // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });
         console.error('Production error:', error, errorInfo);
       }

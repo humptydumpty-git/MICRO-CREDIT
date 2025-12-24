@@ -12,6 +12,8 @@ import {
   getCreditScoreGrade,
   validateEmail,
   validatePhone,
+  calculateEMI,
+  calculateTotalInterest,
 } from '../lib/utils';
 import { CloseIcon, CheckIcon, UserIcon, CreditCardIcon, ShieldIcon } from './ui/Icons';
 
@@ -409,18 +411,6 @@ export const NewLoanModal: React.FC = () => {
 
   const selectedProduct = loanProducts.find((p) => p.id === formData.loan_product_id);
   const selectedCustomer = customers.find((c) => c.id === formData.customer_id);
-
-  // Calculate EMI using the utility function
-  const calculateEMI = (principal: number, rate: number, tenure: number): number => {
-    if (principal <= 0 || tenure <= 0) return 0;
-    const monthlyRate = rate / 100 / 12;
-    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, tenure)) / (Math.pow(1 + monthlyRate, tenure) - 1);
-    return isNaN(emi) ? 0 : emi;
-  };
-
-  const calculateTotalInterest = (principal: number, emi: number, tenure: number): number => {
-    return Math.max(0, emi * tenure - principal);
-  };
 
   const emi = selectedProduct
     ? calculateEMI(
@@ -822,7 +812,8 @@ export const CustomerDetailsModal: React.FC = () => {
 
 // Loan Details Modal
 export const LoanDetailsModal: React.FC = () => {
-  const { modals, closeModal, selectedLoan, customers, loanProducts, updateLoan } = useAppStore();
+  const { modals, closeModal, selectedLoan, customers, loanProducts, updateLoan, setLoans, loans } = useAppStore();
+  const { user } = useAuthStore();
 
   if (!selectedLoan) return null;
 

@@ -14,6 +14,7 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
+  public state: State;
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -31,15 +32,16 @@ class ErrorBoundary extends Component<Props, State> {
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Log error to console in development
-    if (import.meta.env.DEV) {
+    if ((import.meta as any).env?.DEV) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
 
     // Call custom error handler if provided
-    if (this.props.onError) {
-      this.props.onError(error, errorInfo);
+    const { onError } = this.props;
+    if (onError) {
+      onError(error, errorInfo);
     }
 
     // Update state with error info
@@ -60,11 +62,12 @@ class ErrorBoundary extends Component<Props, State> {
     });
   };
 
-  render() {
+  render(): ReactNode {
     if (this.state.hasError) {
       // Use custom fallback if provided
-      if (this.props.fallback) {
-        return this.props.fallback;
+      const { fallback } = this.props;
+      if (fallback) {
+        return fallback;
       }
 
       // Default error UI
@@ -81,7 +84,7 @@ class ErrorBoundary extends Component<Props, State> {
               We're sorry, but something unexpected happened. Please try refreshing the page.
             </p>
 
-            {import.meta.env.DEV && this.state.error && (
+            {(import.meta as any).env?.DEV && this.state.error && (
               <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <p className="text-sm font-mono text-red-600 mb-2">
                   {this.state.error.toString()}
