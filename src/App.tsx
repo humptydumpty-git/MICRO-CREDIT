@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { useAuthInit } from "@/hooks/useAuthInit";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -46,6 +47,7 @@ const App = () => (
     <ThemeProvider defaultTheme="light">
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
+          <OfflineIndicator />
           <Toaster />
           <Sonner />
           <AppContent />

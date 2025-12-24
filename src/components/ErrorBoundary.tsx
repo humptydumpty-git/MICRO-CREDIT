@@ -14,7 +14,6 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  public state: State;
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -32,16 +31,16 @@ class ErrorBoundary extends Component<Props, State> {
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error to console in development
     if ((import.meta as any).env?.DEV) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
 
     // Call custom error handler if provided
-    const { onError } = this.props;
-    if (onError) {
-      onError(error, errorInfo);
+    const props = this.props as Props;
+    if (props.onError) {
+      props.onError(error, errorInfo);
     }
 
     // Update state with error info
@@ -62,12 +61,12 @@ class ErrorBoundary extends Component<Props, State> {
     });
   };
 
-  render(): ReactNode {
+  render() {
     if (this.state.hasError) {
       // Use custom fallback if provided
-      const { fallback } = this.props;
-      if (fallback) {
-        return fallback;
+      const props = this.props as Props;
+      if (props.fallback) {
+        return props.fallback;
       }
 
       // Default error UI
@@ -121,7 +120,8 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    const props = this.props as Props;
+    return props.children;
   }
 }
 

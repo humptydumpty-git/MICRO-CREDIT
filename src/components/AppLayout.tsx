@@ -11,6 +11,7 @@ import {
   dashboardApi 
 } from '@/services/api';
 import { toast } from '@/components/ui/use-toast';
+import { LoadingSpinner } from './LoadingSpinner';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import Dashboard from './Dashboard';
@@ -171,11 +172,16 @@ const AppLayout: React.FC = () => {
     setDashboardStats,
   } = useAppStore();
 
-  const { isAuthenticated, user } = useAuthStore();
-  const { setIsLoading } = useAppStore();
+  const { isAuthenticated, user, isLoading: authLoading } = useAuthStore();
+  const { setIsLoading, isLoading } = useAppStore();
 
   // Initialize data on mount and when user is authenticated
   useEffect(() => {
+    // Wait for auth to finish loading
+    if (authLoading) {
+      return;
+    }
+
     if (!isAuthenticated || !user) {
       // Clear data when user is not authenticated
       setCustomers([]);
@@ -241,7 +247,7 @@ const AppLayout: React.FC = () => {
     };
 
     loadData();
-  }, [isAuthenticated, user?.id, user?.tenant_id]);
+  }, [isAuthenticated, user?.id, user?.tenant_id, authLoading]);
 
   const renderContent = () => {
     // Dashboard is accessible to everyone (but shows login prompt if not authenticated)
@@ -316,7 +322,13 @@ const AppLayout: React.FC = () => {
         {/* Page Content */}
         <main className="pt-16 min-h-screen">
           <div className="p-4 lg:p-6">
-            {renderContent()}
+            {(authLoading || isLoading) && isAuthenticated ? (
+              <div className="flex items-center justify-center min-h-[60vh]">
+                <LoadingSpinner size="lg" text="Loading..." />
+              </div>
+            ) : (
+              renderContent()
+            )}
           </div>
         </main>
       </div>
