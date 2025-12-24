@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../store/appStore';
+import { useAuthStore } from '../store/authStore';
+import { customersApi, loansApi, accountsApi } from '@/services/api';
+import { toast } from '@/components/ui/use-toast';
 import { Customer, Loan } from '../types';
 import {
   formatCurrency,
@@ -7,11 +10,8 @@ import {
   getStatusColor,
   getTierColor,
   getCreditScoreGrade,
-  generateCustomerNumber,
-  generateLoanNumber,
-  generateAccountNumber,
-  calculateEMI,
-  calculateTotalInterest,
+  validateEmail,
+  validatePhone,
 } from '../lib/utils';
 import { CloseIcon, CheckIcon, UserIcon, CreditCardIcon, ShieldIcon } from './ui/Icons';
 
@@ -57,7 +57,8 @@ const Modal: React.FC<{
 
 // New Customer Modal
 export const NewCustomerModal: React.FC = () => {
-  const { modals, closeModal, addCustomer } = useAppStore();
+  const { modals, closeModal, addCustomer, setCustomers, customers } = useAppStore();
+  const { user } = useAuthStore();
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -74,56 +75,114 @@ export const NewCustomerModal: React.FC = () => {
     monthly_income: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = 'First name is required';
+    }
+    if (!formData.last_name.trim()) {
+      newErrors.last_name = 'Last name is required';
+    }
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!validatePhone(formData.phone)) {
+      newErrors.phone = 'Please enter a valid phone number';
+    }
+    if (formData.email && !validateEmail(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    if (formData.monthly_income && parseFloat(formData.monthly_income) < 0) {
+      newErrors.monthly_income = 'Monthly income cannot be negative';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to create a customer',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
+    setErrors({});
 
-    const newCustomer: Customer = {
-      id: `cus-${Date.now()}`,
-      tenant_id: 'tenant-001',
-      customer_number: generateCustomerNumber(),
-      first_name: formData.first_name,
-      last_name: formData.last_name,
-      email: formData.email,
-      phone: formData.phone,
-      date_of_birth: formData.date_of_birth,
-      gender: formData.gender,
-      national_id: formData.national_id,
-      address: formData.address,
-      city: formData.city,
-      state: formData.state,
-      country: 'Nigeria',
-      occupation: formData.occupation,
-      employer: formData.employer,
-      monthly_income: parseFloat(formData.monthly_income) || 0,
-      kyc_status: 'pending',
-      kyc_documents: [],
-      credit_score: 500,
-      tier: 'bronze',
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    try {
+      const customerData: Partial<Customer> = {
+        tenant_id: user.tenant_id,
+        first_name: formData.first_name.trim(),
+        last_name: formData.last_name.trim(),
+        email: formData.email.trim() || undefined,
+        phone: formData.phone.trim(),
+        date_of_birth: formData.date_of_birth || undefined,
+        gender: formData.gender || undefined,
+        national_id: formData.national_id.trim() || undefined,
+        address: formData.address.trim() || undefined,
+        city: formData.city.trim() || undefined,
+        state: formData.state.trim() || undefined,
+        country: 'Nigeria',
+        occupation: formData.occupation.trim() || undefined,
+        employer: formData.employer.trim() || undefined,
+        monthly_income: parseFloat(formData.monthly_income) || undefined,
+        kyc_status: 'pending',
+        kyc_documents: [],
+        credit_score: 500,
+        tier: 'bronze',
+        is_active: true,
+      };
 
-    addCustomer(newCustomer);
-    setIsSubmitting(false);
-    closeModal('newCustomer');
-    setFormData({
-      first_name: '',
-      last_name: '',
-      email: '',
-      phone: '',
-      date_of_birth: '',
-      gender: '',
-      national_id: '',
-      address: '',
-      city: '',
-      state: '',
-      occupation: '',
-      employer: '',
-      monthly_income: '',
-    });
+      const createdCustomer = await customersApi.create(customerData);
+      
+      // Update store with new customer
+      addCustomer(createdCustomer);
+      setCustomers([createdCustomer, ...customers]);
+
+      toast({
+        title: 'Success',
+        description: 'Customer created successfully',
+      });
+
+      // Reset form and close modal
+      setFormData({
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: '',
+        date_of_birth: '',
+        gender: '',
+        national_id: '',
+        address: '',
+        city: '',
+        state: '',
+        occupation: '',
+        employer: '',
+        monthly_income: '',
+      });
+      closeModal('newCustomer');
+    } catch (error: any) {
+      console.error('Error creating customer:', error);
+      toast({
+        title: 'Error',
+        description: error?.message || 'Failed to create customer. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
