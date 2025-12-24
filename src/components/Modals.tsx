@@ -1000,7 +1000,7 @@ export const LoanDetailsModal: React.FC = () => {
         {(selectedLoan.status === 'applied' || selectedLoan.status === 'pending') && (
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
             <button
-              onClick={() => updateLoan(selectedLoan.id, { status: 'rejected' })}
+              onClick={handleReject}
               className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
               Reject
