@@ -10,6 +10,7 @@ import TransactionsPage from './pages/TransactionsPage'
 import LoansPage from './pages/LoansPage'
 import SavingsPage from './pages/SavingsPage'
 import SettingsPage from './pages/SettingsPage'
+import ReportsPage from './pages/ReportsPage'
 import AppLayout from './components/layout/AppLayout'
 import LoadingSpinner from './components/ui/LoadingSpinner'
 
@@ -122,6 +123,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute>
+            <ReportsPage />
           </ProtectedRoute>
         }
       />

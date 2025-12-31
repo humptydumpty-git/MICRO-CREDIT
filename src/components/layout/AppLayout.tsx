@@ -10,7 +10,8 @@ import {
   CreditCard, 
   PiggyBank, 
   Settings, 
-  LogOut 
+  LogOut,
+  FileText
 } from 'lucide-react'
 
 interface AppLayoutProps {
@@ -24,6 +25,7 @@ const navigation = [
   { name: 'Transactions', href: '/transactions', icon: Receipt },
   { name: 'Loans', href: '/loans', icon: CreditCard },
   { name: 'Savings', href: '/savings', icon: PiggyBank },
+  { name: 'Reports', href: '/reports', icon: FileText },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
