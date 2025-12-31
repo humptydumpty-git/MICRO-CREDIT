@@ -826,25 +826,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to generate unique loan number
-CREATE OR REPLACE FUNCTION generate_loan_number(p_tenant_id UUID)
-RETURNS VARCHAR AS $$
-DECLARE
-    v_next_num INTEGER;
-    v_loan_number VARCHAR;
-BEGIN
-    SELECT COALESCE(MAX(CAST(SUBSTRING(loan_number FROM 5) AS INTEGER)), 0) + 1
-    INTO v_next_num
-    FROM loans
-    WHERE tenant_id = p_tenant_id
-    AND loan_number LIKE 'LOAN%';
-    
-    v_loan_number := 'LOAN' || LPAD(v_next_num::TEXT, 8, '0');
-    
-    RETURN v_loan_number;
-END;
-$$ LANGUAGE plpgsql;
-
 -- =====================================================
 -- INITIAL DATA (Optional - for development)
 -- =====================================================

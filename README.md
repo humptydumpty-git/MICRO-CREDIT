@@ -1,229 +1,231 @@
-# Micro Credit Banking Platform
+# 🏦 HUMPBANK - Micro Credit & Savings Banking System
 
-A comprehensive multi-tenant micro credit and banking platform built with React, TypeScript, and Supabase.
+A comprehensive, production-ready multi-tenant banking system for micro credit and savings operations, built with Supabase backend.
 
-## Features
+## 🎯 Overview
 
-- **Customer Management**: Complete customer lifecycle management with KYC tracking
-- **Loan Management**: Loan applications, approvals, disbursements, and tracking
-- **Account Management**: Savings and current accounts with transaction history
-- **Transaction Processing**: Multi-channel transaction processing (web, mobile, agent, bank)
-- **Loan Products**: Configurable loan products with flexible interest rates
-- **Reports & Analytics**: Comprehensive dashboard with real-time statistics
-- **Audit Logs**: Complete audit trail for all system activities
-- **Multi-tenant**: Support for multiple organizations with data isolation
-- **Role-based Access Control**: Granular permissions for different user roles
+HUMPBANK is a full-featured banking system designed for microfinance institutions and banks. It supports multiple banks as tenants, each with their own isolated data. The system provides comprehensive features for both micro credit and micro savings operations.
 
-## Tech Stack
+## ✨ Key Features
 
-- **Frontend**: React 18, TypeScript, Vite
-- **UI Framework**: Tailwind CSS, shadcn/ui components
-- **State Management**: Zustand
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **Routing**: React Router
-- **Form Handling**: React Hook Form, Zod
+### Core Banking Features
+- ✅ **Multi-Tenant Architecture** - Each bank operates independently with isolated data
+- ✅ **Customer Management** - Complete KYC and customer lifecycle management
+- ✅ **Account Management** - Savings, Current, and Loan accounts
+- ✅ **Micro Credit System** - Loan origination, disbursement, repayment tracking
+- ✅ **Micro Savings System** - Savings accounts with interest calculation
+- ✅ **Transaction Processing** - Real-time transaction handling
+- ✅ **Payment Gateway Integration** - Secure payment processing
 
-## Getting Started
+### Advanced Features
+- ✅ **Credit Scoring** - Automated credit assessment
+- ✅ **Interest Calculation** - Flexible interest rate management
+- ✅ **Loan Repayment Schedules** - Automated schedule generation
+- ✅ **SMS Notifications** - Real-time SMS alerts via Twilio
+- ✅ **Email Notifications** - Transaction and account alerts
+- ✅ **Account Balance Checking** - Remote account access
+- ✅ **Audit Logging** - Complete audit trail
+- ✅ **Reports & Analytics** - Comprehensive reporting system
 
-### Prerequisites
+### Security Features
+- ✅ **Row-Level Security (RLS)** - Database-level security
+- ✅ **JWT Authentication** - Secure token-based auth
+- ✅ **Role-Based Access Control** - Granular permissions
+- ✅ **Data Encryption** - Encrypted sensitive data
+- ✅ **Rate Limiting** - API protection
+- ✅ **CORS Protection** - Cross-origin security
 
-- Node.js 18+ and npm/yarn
-- A Supabase account (free tier works fine)
-- Git
+## 🛠️ Tech Stack
 
-### Installation
+- **Frontend**: React 18, TypeScript, Vite, TailwindCSS, shadcn/ui
+- **Backend**: Supabase (PostgreSQL, Auth, Storage, Realtime)
+- **Authentication**: Supabase Auth (JWT)
+- **Database**: PostgreSQL 15+ (via Supabase)
+- **Real-time**: Supabase Realtime
+- **Notifications**: Twilio (SMS), Nodemailer (Email)
+- **Payment Gateway**: Stripe Integration Ready
+- **Deployment**: Vercel/Netlify (Frontend), Supabase (Backend)
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd MICRO-CREDIT
-   ```
+## 📋 Prerequisites
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+- Node.js 18+ 
+- npm or yarn
+- Supabase account (free tier sufficient for development)
+- Twilio account (for SMS notifications)
+- SMTP server (for email notifications)
 
-3. **Set up Supabase**
-   
-   a. Create a new project at [supabase.com](https://supabase.com)
-   
-   b. Go to Project Settings > API and copy your:
-      - Project URL
-      - `anon` `public` API key
-   
-   c. Create a `.env` file in the root directory:
-   ```env
-   VITE_SUPABASE_URL=your-project-url
-   VITE_SUPABASE_ANON_KEY=your-anon-key
-   ```
+## 🚀 Quick Start
 
-4. **Set up the database**
-   
-   a. In Supabase Dashboard, go to SQL Editor
-   
-   b. Run the migration file `supabase/migrations/001_initial_schema.sql`
-      - This creates all necessary tables, indexes, and RLS policies
-   
-   c. (Optional) Create a default tenant:
-      ```sql
-      INSERT INTO tenants (id, name, subdomain, status) 
-      VALUES ('00000000-0000-0000-0000-000000000001', 'MicroFinance Pro', 'mfpro', 'active');
-      ```
+### 1. Clone the Repository
 
-5. **Set up authentication**
-   
-   a. In Supabase Dashboard, go to Authentication > Settings
-   
-   b. Enable Email provider (should be enabled by default)
-   
-   c. Configure email templates if needed
-   
-   d. (For development) You can disable email confirmation:
-      - Go to Authentication > Settings > Email Auth
-      - Toggle "Enable email confirmations" OFF
+```bash
+git clone <repository-url>
+cd HUMPBANK/humpbank
+```
 
-6. **Create your first admin user**
-   
-   You'll need to create a user manually in Supabase:
-   
-   a. Go to Authentication > Users in Supabase Dashboard
-   
-   b. Click "Add User" and create a user with email/password
-   
-   c. Copy the user ID (UUID)
-   
-   d. In SQL Editor, insert the user profile:
-      ```sql
-      INSERT INTO users (id, tenant_id, email, first_name, last_name, role)
-      VALUES (
-        'your-user-id-here',
-        '00000000-0000-0000-0000-000000000001',
-        'admin@example.com',
-        'Admin',
-        'User',
-        'admin'
-      );
-      ```
+### 2. Install Dependencies
 
-7. **Start the development server**
-   ```bash
-   npm run dev
-   ```
+```bash
+npm install
+```
 
-8. **Open your browser**
-   Navigate to `http://localhost:5173` (or the port shown in terminal)
+### 3. Setup Supabase
 
-## Project Structure
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Get your project URL and anon key from Settings > API
+3. Copy `.env.example` to `.env` and fill in your credentials
+
+### 4. Run Database Migrations
+
+1. Go to Supabase Dashboard > SQL Editor
+2. Copy and run all SQL files from `supabase/migrations/` in order
+
+### 5. Start Development Server
+
+```bash
+npm run dev
+```
+
+Visit `http://localhost:5173`
+
+## 📁 Project Structure
 
 ```
-MICRO-CREDIT/
-├── public/                 # Static assets
+humpbank/
 ├── src/
-│   ├── components/         # React components
-│   │   ├── auth/          # Authentication components
-│   │   ├── ui/            # Reusable UI components
-│   │   └── ...            # Feature components
-│   ├── contexts/          # React contexts
-│   ├── data/              # Mock data (for development)
-│   ├── hooks/             # Custom React hooks
-│   ├── lib/               # Utilities and configurations
-│   │   ├── supabase.ts   # Supabase client
-│   │   └── utils.ts      # Helper functions
-│   ├── pages/             # Page components
-│   ├── services/          # API service layer
-│   │   └── api.ts        # All API calls
-│   ├── store/             # Zustand stores
-│   │   ├── authStore.ts  # Authentication state
-│   │   └── appStore.ts   # Application state
-│   ├── types/             # TypeScript type definitions
-│   └── ...
+│   ├── components/        # React components
+│   │   ├── auth/         # Authentication components
+│   │   ├── accounts/     # Account management
+│   │   ├── loans/        # Loan management
+│   │   ├── savings/      # Savings management
+│   │   ├── transactions/ # Transaction components
+│   │   ├── dashboard/    # Dashboard components
+│   │   ├── notifications/# Notification components
+│   │   ├── settings/     # Settings components
+│   │   └── ui/           # Reusable UI components
+│   ├── lib/              # Utilities and configurations
+│   ├── services/         # API services
+│   ├── hooks/            # Custom React hooks
+│   ├── contexts/         # React contexts
+│   ├── types/            # TypeScript type definitions
+│   ├── utils/            # Helper functions
+│   └── pages/            # Page components
 ├── supabase/
-│   └── migrations/        # Database migrations
-├── .env.example           # Environment variables template
+│   └── migrations/       # Database migration files
+├── docs/                 # Documentation
+├── public/               # Static assets
 └── package.json
 ```
 
-## Database Schema
+## 🔐 Environment Variables
 
-The application uses the following main tables:
+Create a `.env` file in the root directory:
 
-- `tenants` - Multi-tenant organization data
-- `users` - User profiles (extends Supabase auth.users)
-- `customers` - Customer records
-- `accounts` - Bank accounts (savings, current, etc.)
-- `loans` - Loan records
-- `loan_products` - Loan product configurations
-- `transactions` - Transaction history
-- `loan_repayments` - Loan repayment tracking
-- `savings_goals` - Savings goal tracking
-- `notifications` - System notifications
-- `audit_logs` - Audit trail
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-All tables use Row Level Security (RLS) to ensure data isolation between tenants.
+# Twilio (SMS)
+VITE_TWILIO_ACCOUNT_SID=your_twilio_account_sid
+VITE_TWILIO_AUTH_TOKEN=your_twilio_auth_token
+VITE_TWILIO_PHONE_NUMBER=your_twilio_phone_number
 
-## Environment Variables
+# Email (SMTP)
+VITE_SMTP_HOST=smtp.gmail.com
+VITE_SMTP_PORT=587
+VITE_SMTP_USER=your_email@gmail.com
+VITE_SMTP_PASSWORD=your_app_password
 
-Required environment variables:
-
-- `VITE_SUPABASE_URL` - Your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` - Your Supabase anon/public key
-
-Never commit your `.env` file to version control!
-
-## Development
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-
-### Adding New Features
-
-1. **Database Changes**: Add migration files in `supabase/migrations/`
-2. **API Integration**: Add methods to `src/services/api.ts`
-3. **State Management**: Update stores in `src/store/`
-4. **Components**: Create components in `src/components/`
-
-## Deployment
-
-### Build for Production
-
-```bash
-npm run build
+# Application
+VITE_APP_URL=http://localhost:5173
+VITE_API_VERSION=v1
 ```
 
-The built files will be in the `dist/` directory.
+## 🗄️ Database Schema
 
-### Deploy to Vercel/Netlify
+HUMPBANK uses a multi-tenant architecture where each bank (tenant) has isolated data. Key tables:
 
-1. Connect your GitHub repository
-2. Set environment variables in the deployment platform
-3. Build command: `npm run build`
-4. Output directory: `dist`
+- `tenants` - Bank/tenant information
+- `users` - System users (admins, officers, customers)
+- `customers` - Customer information
+- `accounts` - Bank accounts (Savings, Current, Loan)
+- `transactions` - All financial transactions
+- `loans` - Loan records
+- `loan_products` - Loan product definitions
+- `loan_repayment_schedules` - Repayment schedules
+- `savings_products` - Savings product definitions
+- `notifications` - Notification records
+- `audit_logs` - System audit trail
 
-## Security Considerations
+See `docs/DATABASE_SCHEMA.md` for detailed schema documentation.
 
-- All API keys should be in environment variables
-- Row Level Security (RLS) is enabled on all tables
-- Never expose service role keys in client code
-- Always validate user permissions on the backend
-- Use HTTPS in production
+## 🔒 Security
 
-## Contributing
+- All tables have Row-Level Security (RLS) enabled
+- JWT tokens for authentication
+- Role-based access control (Admin, Officer, Customer)
+- Data encryption at rest and in transit
+- Rate limiting on API endpoints
+- CORS protection
+
+## 📱 Multi-Tenant Architecture
+
+Each bank operates as an independent tenant with:
+- Isolated database records (via tenant_id)
+- Independent configuration
+- Separate user management
+- Own branding and settings
+
+## 📚 Documentation
+
+- [Setup Guide](./docs/SETUP.md)
+- [Database Schema](./docs/DATABASE_SCHEMA.md)
+- [API Documentation](./docs/API_DOCUMENTATION.md)
+- [Deployment Guide](./docs/DEPLOYMENT.md)
+- [Security Guide](./docs/SECURITY.md)
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm test
+
+# Run tests with coverage
+npm test -- --coverage
+```
+
+## 🚢 Deployment
+
+See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed deployment instructions.
+
+### Quick Deploy
+
+1. **Frontend**: Deploy to Vercel/Netlify
+2. **Database**: Already hosted on Supabase
+3. **Environment Variables**: Set in hosting platform
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## License
+## 📄 License
 
-See LICENSE file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Support
+## 📞 Support
 
-For issues and questions, please open an issue on GitHub.
+For support, email support@humpbank.com or open an issue on GitHub.
+
+## ⭐ Show Your Support
+
+Give a ⭐ if this project helped you!
+
+---
+
+**Built with ❤️ for Microfinance Institutions**
+

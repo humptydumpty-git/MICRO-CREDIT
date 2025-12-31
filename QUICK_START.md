@@ -1,79 +1,108 @@
-# Quick Start Guide
+# HUMPBANK Quick Start Guide
 
-Get the application running in 5 minutes!
+Get HUMPBANK up and running in 5 minutes!
 
-## Prerequisites
-- Node.js 18+ installed
-- A Supabase account (free tier works)
+## Prerequisites Checklist
 
-## Steps
+- [ ] Node.js 18+ installed
+- [ ] npm or yarn installed
+- [ ] Supabase account (free tier works)
 
-### 1. Install Dependencies (1 min)
+## Quick Setup (5 Steps)
+
+### Step 1: Install Dependencies
+
 ```bash
 npm install
 ```
 
-### 2. Set Up Supabase (2 min)
-1. Go to [supabase.com](https://supabase.com) and create a project
-2. Copy your Project URL and anon key from Settings > API
-3. Create `.env` file in project root:
-   ```env
-   VITE_SUPABASE_URL=your-project-url
-   VITE_SUPABASE_ANON_KEY=your-anon-key
+### Step 2: Create Supabase Project
+
+1. Go to [supabase.com](https://supabase.com)
+2. Sign up/Login
+3. Click "New Project"
+4. Fill in details and create project
+5. Wait 2-3 minutes for project to be ready
+
+### Step 3: Get Supabase Credentials
+
+1. In Supabase dashboard → Settings → API
+2. Copy:
+   - **Project URL** (e.g., `https://xxxxx.supabase.co`)
+   - **anon public** key
+
+### Step 4: Configure Environment
+
+1. Create `.env` file in project root:
+   ```bash
+   cp .env.example .env
    ```
 
-### 3. Set Up Database (1 min)
-1. In Supabase Dashboard, go to SQL Editor
+2. Open `.env` and add:
+   ```env
+   VITE_SUPABASE_URL=https://xxxxx.supabase.co
+   VITE_SUPABASE_ANON_KEY=your_anon_key_here
+   ```
+
+### Step 5: Set Up Database & Run
+
+1. In Supabase dashboard → SQL Editor
 2. Copy contents of `supabase/migrations/001_initial_schema.sql`
-3. Paste and run in SQL Editor
+3. Paste and Run (Ctrl/Cmd + Enter)
 4. Create default tenant:
    ```sql
-   INSERT INTO tenants (id, name, subdomain, status) 
-   VALUES ('00000000-0000-0000-0000-000000000001', 'MicroFinance Pro', 'mfpro', 'active');
+   INSERT INTO tenants (id, name, code, subdomain, status) 
+   VALUES ('00000000-0000-0000-0000-000000000001', 'HUMPBANK Default', 'HUMP001', 'default', 'active');
+   ```
+5. Start the app:
+   ```bash
+   npm run dev
    ```
 
-### 4. Create First User (1 min)
-1. In Supabase Dashboard, go to Authentication > Users
-2. Click "Add user" > "Create new user"
-3. Enter email and password, check "Auto Confirm User"
-4. Copy the user's UUID
-5. In SQL Editor, run:
-   ```sql
-   INSERT INTO users (id, tenant_id, email, first_name, last_name, role)
-   VALUES ('USER_UUID_HERE', '00000000-0000-0000-0000-000000000001', 'your-email@example.com', 'Admin', 'User', 'admin');
-   ```
-   (Replace USER_UUID_HERE with the UUID from step 3)
+6. Create admin user:
+   - Go to Supabase → Authentication → Users
+   - Add user with email/password
+   - Copy the UUID
+   - In SQL Editor, run:
+     ```sql
+     INSERT INTO users (id, tenant_id, email, first_name, last_name, role)
+     VALUES ('USER_UUID_HERE', '00000000-0000-0000-0000-000000000001', 'admin@example.com', 'Admin', 'User', 'admin');
+     ```
 
-### 5. Start Development Server
-```bash
-npm run dev
-```
+7. Open `http://localhost:5173` and login!
 
-### 6. Log In
-- Open http://localhost:5173 (or the port shown)
-- Log in with the email/password you created
-- You're ready to go! 🎉
+## That's It! 🎉
 
-## Troubleshooting
-
-**Can't log in?**
-- Check user exists in both Authentication > Users AND the users table
-- Verify `is_active` is `true` in users table
-- Check browser console for errors
-
-**Database errors?**
-- Verify migration SQL ran successfully
-- Check RLS policies are enabled
-- Verify tenant_id matches in all tables
-
-**Environment variables not working?**
-- Make sure variable names start with `VITE_`
-- Restart dev server after changing `.env`
-- Check for typos
+You now have HUMPBANK running locally.
 
 ## Next Steps
 
-- See [SETUP.md](SETUP.md) for detailed setup
-- See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for production deployment
-- See [README.md](README.md) for full documentation
+- Read [SETUP.md](./docs/SETUP.md) for detailed setup
+- Read [DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md) to understand the database
+- Read [API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md) for API usage
+- Read [DEPLOYMENT.md](./docs/DEPLOYMENT.md) to deploy to production
+
+## Troubleshooting
+
+**"Missing Supabase environment variables"**
+- Check `.env` file exists and has correct variable names (must start with `VITE_`)
+- Restart dev server after changing `.env`
+
+**"Invalid login credentials"**
+- Make sure user exists in Supabase Authentication → Users
+- Make sure user profile exists in `users` table
+- Check `is_active` is `true` in users table
+
+**"Row Level Security policy violation"**
+- Check that you ran the migration SQL
+- Verify user has correct `tenant_id`
+
+**Still having issues?**
+- Check browser console for errors
+- Check Supabase logs (Dashboard → Logs)
+- Review [SETUP.md](./docs/SETUP.md) for detailed troubleshooting
+
+---
+
+Happy Banking! 🏦
 
